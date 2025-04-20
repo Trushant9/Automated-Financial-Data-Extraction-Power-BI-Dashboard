@@ -1,0 +1,71 @@
+**Loan Type Table
+----------------
+LoanTypeTable = 
+var LoanTypeData = 
+    GENERATE(
+        combined_df,
+           var LoanTypeList = SUBSTITUTE(combined_df[Type_of_Loan],",","|")
+           RETURN
+              ADDCOLUMNS(
+                GENERATESERIES(1,PATHLENGTH(LoanTypeList)),
+                "LoanType",TRIM(PATHITEM(LoanTypeList,[Value],TEXT))
+            )
+    )
+
+RETURN
+SELECTCOLUMNS(
+    LoanTypeData,
+    "Customer_ID",combined_df[Customer_ID],
+    "LoanType", TRIM(SUBSTITUTE([LoanType],"and",""))
+    )
+
+**Average Credit Inquiries
+--------------------------
+AverageCreditInquiries = 
+AVERAGEX(
+    FILTER(
+        combined_df,
+        NOT(ISERROR(VALUE(combined_df[Number_of_Credit_Inquiries])))
+    ),
+    VALUE(combined_df[Number_of_Credit_Inquiries])
+)
+
+**LTV Score
+------------
+LTV Score = 
+var AvgAnnualIncome = CALCULATE(AVERAGE(combined_df[Annual_Income]))
+var AvgDelayFromDueDate = CALCULATE(AVERAGE(combined_df[Delay_from_due_date]))
+var AvgAmountInvested = CALCULATE(AVERAGE(combined_df[Amount_invested_monthly]))
+var AvgMonthlyBalance = CALCULATE(AVERAGE(combined_df[Monthly_Balance]))
+var AvgCreditScore = 
+    CALCULATE(
+        AVERAGEX(
+            VALUES(combined_df[Credit_Mix]),
+            SWITCH(
+                TRUE(),
+                combined_df[Credit_Mix]="Good",3,
+                combined_df[Credit_Mix]="Above Standard",2,
+                combined_df[Credit_Mix]="Standard",1,
+                combined_df[Credit_Mix]="Bad",0
+            )
+        )
+    )
+var LTV = (0.3*AvgAnnualIncome)-(0.15*AvgDelayFromDueDate)+(0.4*AvgCreditScore)+(0.075*AvgAmountInvested)+(0.075*AvgMonthlyBalance)                       
+Return 
+if (LTV>80000,"30% off on online purchases +home loan at 4% interest",
+    if (LTV>60000 && LTV<80000,"15% off on online purchases+10000 worth gift hampers",
+        if (LTV>50000 && LTV<60000,"Any loan at 5% interest rate",BLANK())))
+
+**Potential Customer
+--------------------
+Potential Customer = 
+VAR averag =
+    AVERAGEX(
+        FILTER(
+            combined_df,
+            NOT(ISERROR(VALUE(combined_df[Number_of_Credit_Inquiries])))
+        ),
+        VALUE(combined_df[Number_of_Credit_Inquiries])
+    )
+RETURN
+IF(averag > 7.5, "Potential Customer", BLANK())

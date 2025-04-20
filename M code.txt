@@ -1,0 +1,55 @@
+** Added Custom Column (Age)
+-------------------------------
+let 
+  MedianAge = List.Median(#"Changed Type on Age"[Age])
+in 
+  if[Age]>12 and [Age]<95 then [Age] else MedianAge
+
+** Added Custom Column (Monthly_in_hand_salary)
+------------------------------------------------
+([Annual_Income]-(0.10*[Annual_Income]))/12
+
+** Added Custom Column (Num_Bank_Accounts)
+--------------------------------------------
+let 
+  MedianAccount = List.Median(#"Changed Type on Num_Bank_Accounts"[Num_Bank_Accounts])
+in 
+  if[Num_Bank_Accounts]>=0 and [Num_Bank_Accounts]<11 then [Num_Bank_Accounts] else MedianAccount
+
+**Added Custom Column (Num_Credit_card)
+----------------------------------------
+let 
+  MedianCredit = List.Median(#"Renamed Column (Num_of_Accounts)"[Num_Credit_Card])
+in 
+  if[Num_Credit_Card]>=0 then [Num_Credit_Card] else MedianCredit
+
+**Added Custom column (Interest_Rate)
+--------------------------------------
+let 
+  MedianInterest = List.Median(#"Changed Type(Num_of_Credit_Cards)"[Interest_Rate])
+in 
+  if[Interest_Rate]<35 then [Interest_Rate] else MedianInterest
+
+** Added Custom column (Num_of_loans)
+--------------------------------------
+if Text.Length([Type_of_Loan])=0 then 0 else 
+List.Count(Text.Split([Type_of_Loan],","))
+
+**Added Conditional column (Num_Credit_Inquiries)
+-------------------------------------------------
+if Num_Credit_Inquiries is less than 1 then Data Missing
+else if Num_Credit_Inquiries is greater than 26 then Data Missing
+else Num_Credit_Inquiries
+
+**Added Custom column (Credit history in months)
+--------------------------------------------------
+if Text.Trim([Credit_History_Age]) = "" then 0 else 
+Number.FromText(Text.BeforeDelimiter([Credit_History_Age],"Years"))*12+Number.FromText(Text.BetweenDelimiters([Credit_History_Age],"and","Months"))
+
+**Added Custom column (Age Groups)
+----------------------------------
+if[Age]>14 and [Age]<=19 then "Teen"
+else if[Age]>19 and [Age]<=25 then "Young Adult"
+else if[Age]>25 and [Age]<=35 then "Old Adult"
+else if[Age]>35 and [Age]<=45 then "Old1"
+else "Old2"
